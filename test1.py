@@ -105,20 +105,14 @@ class Alchemy:
     def add_discovered_element(self, element: str) -> None:
         self._discovered_elements.add(element)  # Add a newly discovered element
 
-    def count_comp_elements(self, element: Element) -> int:
-        total = 0
-        if isinstance(element, CompoundElement):
-            components = element.components  # Get components first
-            for component in components:
-                if str(component) not in self._base_elements:  # If not a base element
-                    total += 1  # Count only if the component is a compound
-        return total  # Return the total count
-
     def get_components_from_recipe(self, result: str) -> Optional[List[str]]:
         for recipe in self._recipes:
             if recipe.result == result:
                 return [recipe.element1, recipe.element2]  # Return the components of the recipe
         return None  # Return None if no recipe found for the result
+
+
+
 
 #Main game loop logic
 class AlchemyGame:
@@ -130,6 +124,7 @@ class AlchemyGame:
         self._time_limit = time_limit  # Sets time limit
         self._time_increase = 15  # Amount of time to add for each completed request
 
+
     def _generate_request(self) -> Optional[Request]:
         undiscovered_elements = [
             recipe.result for recipe in self._alchemy._create_recipes()  # Sets uncreated recipes as undiscovered elements
@@ -140,23 +135,20 @@ class AlchemyGame:
             return None  # Return None if no undiscovered elements
         
         required_element = random.choice(undiscovered_elements)  # Randomly select a required element
+        if any(recipe.result == required_element for recipe in self._alchemy._create_recipes()): # Check if the request is in recipes
         
-        # Check if the request is in recipes
-        if any(recipe.result == required_element for recipe in self._alchemy._create_recipes()):
+            components = self._alchemy.get_components_from_recipe(required_element) # Get components of the required element from recipes
             
-            # Get components of the required element from recipes
-            components = self._alchemy.get_components_from_recipe(required_element)
-            
-            # Check if any components are compound elements
             if components:
                 num_compound_elements = sum(
-                    1 for component in components if component not in self._alchemy._base_elements
+                    1 for component in components if component not in self._alchemy._base_elements #Checks if component is not basic thus compound
                 )
 
                 if num_compound_elements > 0:
                     return ComplexRequest(required_element, num_compound_elements)  # Generate a complex request based on the count
                 
             return Request(required_element)  # Fallback to a standard request
+
 
     def play(self) -> None:
         print("\n𝐀𝐋𝐂𝐇𝐄𝐌𝐘 𝐑𝐔𝐒𝐇\nStarting time limit is 60 Seconds.") # Title
@@ -191,10 +183,8 @@ class AlchemyGame:
                     print(f"You created: {result}\n")
 
                     # Count compound elements in the created compound
-                    compound_count = self._alchemy.count_comp_elements(result)
-                    print(f"Total compound elements in {result.name}: {compound_count}\n")
 
-                    self._check_request(result, compound_count)  # Check if the request is fulfilled
+                    self._check_request(result)  # Check if the request is fulfilled
                     if self._check_win_condition():  # Win condition
                         print("Congratulations! You've discovered all elements!")  
                         break
@@ -203,7 +193,8 @@ class AlchemyGame:
             else:
                 print("One or both elements are not valid.") # Nope
 
-    def _check_request(self, created_element: CompoundElement, compound_count: int) -> None: # Checks if request is completed
+
+    def _check_request(self, created_element: CompoundElement) -> None: # Checks if request is completed
         if created_element.name == self._request.required_element:
             print(f"Request fulfilled: {self._request}")
             # Get points from the request's calculate_points method
@@ -212,15 +203,17 @@ class AlchemyGame:
             self._score += points  # Update the score
             print(f"You earned {points} points! Total Score: {self._score}")
 
-            # Decrease the time limit
+            # Edit the time limit
             self._time_limit += self._time_increase
             print(f"New time limit: {self._time_limit} seconds")
 
             self._request = self._generate_request()  # Generate a new request
         
+        
     def _check_win_condition(self) -> bool: # Checks win condition
         total_elements = len(self._alchemy._create_elements()) + len(self._alchemy._create_recipes())
         return len(self._alchemy.discovered_elements) == total_elements  # Check if all elements are discovered
+
 
     def _get_element(self, name: str) -> Optional[Element]:  # Gets element
         # Check against base elements
