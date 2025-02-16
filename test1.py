@@ -85,11 +85,16 @@ class Alchemy:
             Recipe("Water", "Fire", "Steam"),
             Recipe("Water", "Earth", "Mud"),
             Recipe("Fire", "Air", "Smoke"),
+            Recipe("Fire", "Earth", "Lava"),
             Recipe("Earth", "Air", "Dust"),
             Recipe("Wood", "Fire", "Charcoal"),
+            Recipe("Wood", "Water", "Life"),
             Recipe("Metal", "Fire", "Liquid Metal"),
+            Recipe("Liquid Metal", "Water", "Reinforced Metal"),
             Recipe("Steam", "Air", "Cloud"),
             Recipe("Mud", "Earth", "Clay"),
+            Recipe("Mud", "Life", "Seeds"),
+            Recipe("Clay", "Fire", "Brick"),
         ]  # Define the recipes for the game
 
     def combine(self, elem1: Element, elem2: Element) -> Optional[CompoundElement]:
