@@ -161,6 +161,8 @@ class AlchemyGame:
             elapsed_time = time.time() - self._start_time  # Calculate time spent
             if elapsed_time > self._time_limit: # Time up
                 print("\nTime's up! Your final score is:", self._score)  
+                time.sleep(15)
+
                 break
             
             print(f"\nCurrent Score: {self._score}")
